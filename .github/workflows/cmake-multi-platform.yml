@@ -24,13 +24,13 @@ jobs:
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
-          - os: Linux
+          - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
         exclude:
-          - os: ubuntu-latest
+          - os: windows-latest
             c_compiler: gcc
-          - os: Linux
+          - os: ubuntu-latest
             c_compiler: cl
 
     steps:
