@@ -76,3 +76,41 @@ add_subdirectory(ThirdParty EXCLUDE_FROM_ALL)
 add_subdirectory(test)
 add_subdirectory(Experiments)
 add_subdirectory(PySparQ)
+
+# --- Install rules ---
+include(GNUInstallDirs)
+
+set(INSTALL_CONFIGDIR "${CMAKE_INSTALL_LIBDIR}/cmake/QRAMSimulator")
+
+install(TARGETS SparQ
+    EXPORT QRAMSimulatorTargets
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(DIRECTORY
+    Common/include/
+    QRAM/include/
+    SparQ/include/
+    SparQ_Algorithm/include/
+    ThirdParty/eigen-3.4.0/
+    ThirdParty/fmt/include/
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(EXPORT QRAMSimulatorTargets
+    FILE QRAMSimulatorTargets.cmake
+    NAMESPACE QRAMSimulator::
+    DESTINATION ${INSTALL_CONFIGDIR}
+)
+
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/QRAMSimulatorConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/QRAMSimulatorConfig.cmake
+    INSTALL_DESTINATION ${INSTALL_CONFIGDIR}
+)
+
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/QRAMSimulatorConfig.cmake
+    DESTINATION ${INSTALL_CONFIGDIR}
+)
