@@ -136,7 +136,7 @@ jobs:
         -DCMAKE_C_COMPILER=${{ runner.os == 'Linux' && 'gcc' || matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -DCACHED_REGISTER_SIZE=50
-        -S ${{ github.workspace }}
+        -S .
 
     - name: Build
       shell: bash
