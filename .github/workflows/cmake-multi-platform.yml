@@ -163,8 +163,8 @@ jobs:
       if: ${{ matrix.os == 'windows-latest' }}
       shell: bash
       run: |
-          ${{ steps.strings.outputs.build-output-dir }}/bin/${{ matrix.build_type }}/ExecutabilityTest.exe
-          ${{ steps.strings.outputs.build-output-dir }}/bin/${{ matrix.build_type }}/CorrectnessTest.exe
+          ${{ steps.strings.outputs.build-output-dir }}/bin/ExecutabilityTest.exe
+          ${{ steps.strings.outputs.build-output-dir }}/bin/CorrectnessTest.exe
 
     # --- Python package ---
     - name: Build Python Package
