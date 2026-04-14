@@ -1,37 +1,52 @@
-# This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
-# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
 name: CMake on multiple platforms
 
 on:
   push:
     branches: [ "main", "develop" ]
+    paths:
+      - 'CMakeLists.txt'
+      - '**/*.cmake'
+      - '**/*.h'
+      - '**/*.hpp'
+      - '**/*.cpp'
+      - '**/*.cu'
+      - '**/*.py'
+      - 'ThirdParty/**'
+      - '.github/workflows/cmake-multi-platform.yml'
   pull_request:
     branches: [ "main", "develop" ]
+    paths:
+      - 'CMakeLists.txt'
+      - '**/*.cmake'
+      - '**/*.h'
+      - '**/*.hpp'
+      - '**/*.cpp'
+      - '**/*.cu'
+      - '**/*.py'
+      - 'ThirdParty/**'
+      - '.github/workflows/cmake-multi-platform.yml'
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
 
     strategy:
-      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations.
       fail-fast: false
 
       matrix:
         os: [ubuntu-latest, windows-latest]
         build_type: [Release]
-        c_compiler: [gcc, cl]
         include:
-          - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
-        exclude:
           - os: windows-latest
-            c_compiler: gcc
-          - os: ubuntu-latest
             c_compiler: cl
+            cpp_compiler: cl
 
     steps:
     - uses: actions/checkout@v4
@@ -39,56 +54,120 @@ jobs:
         submodules: 'true'
 
     - name: Set reusable strings
-      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
       id: strings
       shell: bash
       run: |
-        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+        echo "build-output-dir=$(pwd)/build" >> "$GITHUB_OUTPUT"
 
+    # --- ccache (Linux only) ---
+    - name: Install ccache
+      if: runner.os == 'Linux'
+      run: sudo apt-get update && sudo apt-get install -y ccache
+
+    - name: Prepare ccache
+      if: runner.os == 'Linux'
+      id: ccache-prepare
+      shell: bash
+      run: |
+        CCACHE_DIR="${{ runner.temp }}/ccache"
+        echo "dir=${CCACHE_DIR}" >> "$GITHUB_OUTPUT"
+        mkdir -p "${CCACHE_DIR}"
+
+    - name: Cache ccache
+      if: runner.os == 'Linux'
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.ccache-prepare.outputs.dir }}
+        key: ccache-linux-${{ matrix.build_type }}-${{ github.sha }}
+        restore-keys: |
+          ccache-linux-${{ matrix.build_type }}-
+
+    - name: Configure ccache
+      if: runner.os == 'Linux'
+      run: |
+        ccache --set-config=max_size=500M
+        ccache --set-config=compression=true
+        ccache -z
+
+    # --- CMake build cache ---
+    - name: Hash CMake and source files
+      id: cmake-hash
+      shell: bash
+      run: |
+        HASH=$(find . -name 'CMakeLists.txt' -o -name '*.cmake' \
+                | sort | xargs sha256sum | sha256sum | cut -d' ' -f1)
+        SUB_HASH=$(find ThirdParty -type f 2>/dev/null \
+                   | sort | xargs sha256sum | sha256sum | cut -d' ' -f1)
+        echo "hash=${HASH}-${SUB_HASH}" >> "$GITHUB_OUTPUT"
+
+    - name: Cache CMake build directory
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.strings.outputs.build-output-dir }}
+        key: cmake-${{ runner.os }}-${{ matrix.build_type }}-${{ steps.cmake-hash.outputs.hash }}
+        restore-keys: |
+          cmake-${{ runner.os }}-${{ matrix.build_type }}-
+
+    # --- pip cache ---
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Cache pip packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/pip
+          ~/AppData/Local/pip/cache
+        key: pip-${{ runner.os }}-${{ hashFiles('PySparQ/**/setup.py', 'PySparQ/**/pyproject.toml', 'setup.py', 'pyproject.toml') }}
+        restore-keys: |
+          pip-${{ runner.os }}-
+
+    # --- Build ---
     - name: Configure CMake
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      shell: bash
+      env:
+        CC: ${{ runner.os == 'Linux' && 'ccache gcc' || matrix.c_compiler }}
+        CXX: ${{ runner.os == 'Linux' && 'ccache g++' || matrix.cpp_compiler }}
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
-        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_CXX_COMPILER=${{ runner.os == 'Linux' && 'g++' || matrix.cpp_compiler }}
+        -DCMAKE_C_COMPILER=${{ runner.os == 'Linux' && 'gcc' || matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -DCACHED_REGISTER_SIZE=50
-        -S ${{ github.workspace }}
+        -S .
 
     - name: Build
-      # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
+      shell: bash
+      env:
+        CC: ${{ runner.os == 'Linux' && 'ccache gcc' || matrix.c_compiler }}
+        CXX: ${{ runner.os == 'Linux' && 'ccache g++' || matrix.cpp_compiler }}
       run: >
         cmake --build ${{ steps.strings.outputs.build-output-dir }}
         --config ${{ matrix.build_type }}
         --parallel 4
-        # --target 
-        # ExecutabilityTest 
-        # CorrectnessTest 
-        
+
+    - name: Show ccache stats
+      if: runner.os == 'Linux'
+      run: ccache -s
+
+    # --- Test ---
     - name: Test
-      # Test on Linux will not have extenions.
       if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
-          ${{ steps.strings.outputs.build-output-dir }}/bin/ExecutabilityTest          
-          ${{ steps.strings.outputs.build-output-dir }}/bin/CorrectnessTest       
+          ${{ steps.strings.outputs.build-output-dir }}/bin/ExecutabilityTest
+          ${{ steps.strings.outputs.build-output-dir }}/bin/CorrectnessTest
 
     - name: Test
-      # Test on Windows will have a ".exe" extension, while Linux executables will have no extension.
-      # Treat them differently to avoid errors.
       if: ${{ matrix.os == 'windows-latest' }}
+      shell: bash
       run: |
           ${{ steps.strings.outputs.build-output-dir }}/bin/ExecutabilityTest.exe
           ${{ steps.strings.outputs.build-output-dir }}/bin/CorrectnessTest.exe
-                                
+
+    # --- Python package ---
     - name: Build Python Package
-      if: ${{ matrix.os == 'ubuntu-latest' }}
-      # Build your program with the given configuration
-      run: pip install .
-              
-    - name: Build Python Package
-      if: ${{ matrix.os == 'windows-latest' }}
-      # Build your program with the given configuration
       run: pip install .
 
     - name: Test Python Package
