@@ -82,7 +82,7 @@ include(GNUInstallDirs)
 
 set(INSTALL_CONFIGDIR "${CMAKE_INSTALL_LIBDIR}/cmake/QRAMSimulator")
 
-install(TARGETS SparQ
+install(TARGETS SparQ SparQ_Common SparQ_QRAMSimulator SparQ_Algorithm
     EXPORT QRAMSimulatorTargets
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
