@@ -154,18 +154,20 @@ jobs:
 
     # --- Test ---
     - name: Test
+      # Use ctest to run all registered tests (via gtest_discover_tests)
+      # This works on both Linux and Windows via CTest's platform detection
       if: ${{ matrix.os == 'ubuntu-latest' }}
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: |
-          ${{ steps.strings.outputs.build-output-dir }}/bin/ExecutabilityTest
-          ${{ steps.strings.outputs.build-output-dir }}/bin/CorrectnessTest
+          ctest --output-on-failure
 
     - name: Test
+      # Windows uses multi-config generators, specify --configuration
       if: ${{ matrix.os == 'windows-latest' }}
-      shell: bash
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: |
-          ${{ steps.strings.outputs.build-output-dir }}/bin/ExecutabilityTest.exe
-          ${{ steps.strings.outputs.build-output-dir }}/bin/CorrectnessTest.exe
-
+          ctest --output-on-failure -C ${{ matrix.build_type }}
+                                
     # --- Python package ---
     - name: Build Python Package
       run: pip install .

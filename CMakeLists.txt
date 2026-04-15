@@ -22,6 +22,9 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
+# Enable testing
+enable_testing()
+
 include(CheckLanguage)
 check_language(CUDA)
 
@@ -63,6 +66,12 @@ else()
     message(STATUS "TBB not found - using OpenMP for parallelization")
 endif()
 
+# Google Test (from conda environment)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+set(GTest_DIR "$ENV{HOME}/miniconda3/lib/cmake/GTest" CACHE PATH "" FORCE)
+find_package(GTest CONFIG REQUIRED)
+message(STATUS "Found GTest: ${GTest_FOUND}")
+
 if (UNIX)
 	add_compile_options(-fPIC)
 endif(UNIX)
@@ -76,6 +85,7 @@ endif(UNIX)
 add_subdirectory(Common)
 add_subdirectory(QRAM)
 add_subdirectory(SparQ)
+add_subdirectory(SparQ/test)
 add_subdirectory(SparQ_Algorithm)
 add_subdirectory(ThirdParty EXCLUDE_FROM_ALL)
 add_subdirectory(test)
