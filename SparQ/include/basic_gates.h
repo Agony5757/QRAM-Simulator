@@ -1,10 +1,4 @@
 #pragma once
-
-// Windows MSVC requires _USE_MATH_DEFINES for M_PI
-#ifdef _WIN32
-#define _USE_MATH_DEFINES
-#endif
-
 #include "sparse_state_simulator.h"
 #include "matrix.h"
 #include <Eigen/Eigen>
@@ -155,8 +149,8 @@ namespace qram_simulator
 		using Phase_Bool::Phase_Bool;
 
 		// Convenience constructors for single-qubit Z gate (lambda = pi)
-		Zgate_Bool(std::string_view reg_) : Phase_Bool(reg_, 0, M_PI) {}
-		Zgate_Bool(size_t id_) : Phase_Bool(id_, 0, M_PI) {}
+		Zgate_Bool(std::string_view reg_) : Phase_Bool(reg_, 0, pi) {}
+		Zgate_Bool(size_t id_) : Phase_Bool(id_, 0, pi) {}
 
 		//void display() const override;
 	};
@@ -168,8 +162,8 @@ namespace qram_simulator
 		using Phase_Bool::Phase_Bool;
 
 		// Convenience constructors for S gate (lambda = pi/2)
-		Sgate_Bool(std::string_view reg_) : Phase_Bool(reg_, 0, M_PI / 2) {}
-		Sgate_Bool(size_t id_) : Phase_Bool(id_, 0, M_PI / 2) {}
+		Sgate_Bool(std::string_view reg_) : Phase_Bool(reg_, 0, pi / 2) {}
+		Sgate_Bool(size_t id_) : Phase_Bool(id_, 0, pi / 2) {}
 
 		//void display() const override;
 	};
@@ -181,8 +175,8 @@ namespace qram_simulator
 		using Phase_Bool::Phase_Bool;
 
 		// Convenience constructors for T gate (lambda = pi/4)
-		Tgate_Bool(std::string_view reg_) : Phase_Bool(reg_, 0, M_PI / 4) {}
-		Tgate_Bool(size_t id_) : Phase_Bool(id_, 0, M_PI / 4) {}
+		Tgate_Bool(std::string_view reg_) : Phase_Bool(reg_, 0, pi / 4) {}
+		Tgate_Bool(size_t id_) : Phase_Bool(id_, 0, pi / 4) {}
 
 		//void display() const override;
 	};
