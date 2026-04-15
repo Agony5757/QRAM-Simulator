@@ -135,3 +135,9 @@ install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/QRAMSimulatorConfig.cmake
     DESTINATION ${INSTALL_CONFIGDIR}
 )
+
+# Examples
+option(BUILD_EXAMPLES "Build example programs" ON)
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
