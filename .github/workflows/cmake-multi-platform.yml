@@ -164,3 +164,26 @@ jobs:
         else
           echo "No Python tests found"
         fi
+
+  # ============================================================================
+  # Documentation build job
+  # ============================================================================
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'true'
+
+    - name: Install Doxygen
+      run: sudo apt-get update && sudo apt-get install -y doxygen graphviz
+
+    - name: Generate API Documentation
+      run: doxygen Doxyfile
+
+    - name: Upload documentation artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: api-documentation
+        path: docs/api/html/
+        retention-days: 30
