@@ -190,10 +190,17 @@ jobs:
         path: docs/api/html/
         retention-days: 30
 
+    - name: Prepare Pages directory
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        mkdir -p pages-deploy/api
+        cp -r docs/api/html/* pages-deploy/api/
+        cp docs/index.html pages-deploy/index.html
+
     - name: Deploy to GitHub Pages
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       uses: peaceiris/actions-gh-pages@v4
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: docs/api/html/
+        publish_dir: pages-deploy/
         publish_branch: gh-pages
