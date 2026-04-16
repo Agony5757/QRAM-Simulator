@@ -1,7 +1,7 @@
 # QRAM-Simulator & PySparQ
 
-[![arXiv:QRAM](https://img.shields.io/badge/arXiv-QRAM_Simulator-2503.13832-b31b1b.svg)](https://arxiv.org/abs/2503.13832)
-[![arXiv:SparQ](https://img.shields.io/badge/arXiv-SparQ-2503.15118-6f42c1.svg)](https://arxiv.org/abs/2503.15118)
+[![arXiv:QRAM](https://img.shields.io/badge/QRAM_Simulator-arXiv%3A2503%2E13832-b31b1b.svg)](https://arxiv.org/abs/2503.13832)
+[![arXiv:SparQ](https://img.shields.io/badge/SparQ-arXiv%3A2503%2E15118-6f42c1.svg)](https://arxiv.org/abs/2503.15118)
 [![PyPI](https://img.shields.io/pypi/v/pysparq.svg)](https://pypi.org/project/pysparq/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
