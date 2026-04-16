@@ -64,6 +64,26 @@ namespace {
         System::clear();
         return true;
     }
+
+    // Specialization for single-register in-place operators like Add_ConstUInt
+    template<>
+    bool verify_inplace_unitarity<Add_ConstUInt>(std::string reg_name, size_t add_val) {
+        System::clear();
+        auto reg = System::add_register(reg_name, UnsignedInteger, UNITARY_TEST_STATE_SIZE);
+        Add_ConstUInt op(reg_name, add_val);
+
+        for (size_t v = 0; v < 4; ++v) {
+            std::vector<System> state;
+            state.emplace_back();
+            state[0].get(reg).value = v;
+            op(state);
+            op.dag(state);
+            if (state.size() != 1 || state[0].get(reg).value != v)
+                return false;
+        }
+        System::clear();
+        return true;
+    }
 }
 
 class QuantumArithmeticTest : public ::testing::Test {
