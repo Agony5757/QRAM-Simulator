@@ -22,3 +22,10 @@ gtest_discover_tests(condrot_test)
 add_executable(quantum_arithmetic_test quantum_arithmetic.cpp)
 target_link_libraries(quantum_arithmetic_test SparQ GTest::gtest_main)
 gtest_discover_tests(quantum_arithmetic_test)
+
+# Dynamic operator tests
+add_executable(dynamic_operator_test test_dynamic_operator.cpp)
+target_link_libraries(dynamic_operator_test SparQ GTest::gtest_main)
+# Link with dl for dynamic library loading
+target_link_libraries(dynamic_operator_test ${CMAKE_DL_LIBS})
+gtest_discover_tests(dynamic_operator_test)
