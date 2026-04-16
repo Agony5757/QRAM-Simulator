@@ -65,12 +65,13 @@ namespace {
         return true;
     }
 
-    // Specialization for single-register in-place operators like Add_ConstUInt
-    template<>
-    bool verify_inplace_unitarity<Add_ConstUInt>(std::string reg_name, size_t add_val) {
+    // Separate function for single-register in-place operators like Add_ConstUInt
+    // (Cannot use template specialization because the primary template creates two registers)
+    template<typename OpType>
+    bool verify_single_reg_inplace_unitarity(std::string reg_name, size_t arg_val) {
         System::clear();
         auto reg = System::add_register(reg_name, UnsignedInteger, UNITARY_TEST_STATE_SIZE);
-        Add_ConstUInt op(reg_name, add_val);
+        OpType op(reg_name, arg_val);
 
         for (size_t v = 0; v < 4; ++v) {
             std::vector<System> state;
@@ -361,8 +362,8 @@ TEST(QuantumArithmeticTest, AddUIntUIntInPlaceUnitarity)
 // Test Add_ConstUInt unitarity with a few constant values
 TEST(QuantumArithmeticTest, AddConstUIntUnitarity)
 {
-    EXPECT_TRUE((verify_inplace_unitarity<Add_ConstUInt>("reg", 1)));
-    EXPECT_TRUE((verify_inplace_unitarity<Add_ConstUInt>("reg", 3)));
+    EXPECT_TRUE((verify_single_reg_inplace_unitarity<Add_ConstUInt>("reg", 1)));
+    EXPECT_TRUE((verify_single_reg_inplace_unitarity<Add_ConstUInt>("reg", 3)));
 }
 
 // Test Mult_UInt_ConstUInt unitarity (out-of-place, self-adjoint)
