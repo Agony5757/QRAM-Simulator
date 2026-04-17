@@ -90,11 +90,15 @@ jobs:
     - name: Test (Unix)
       if: runner.os != 'Windows'
       working-directory: ${{ env.BUILD_DIR }}
+      env:
+        PROJECT_ROOT: ${{ github.workspace }}
       run: ctest --output-on-failure -j4
 
     - name: Test (Windows)
       if: runner.os == 'Windows'
       working-directory: ${{ env.BUILD_DIR }}
+      env:
+        PROJECT_ROOT: ${{ github.workspace }}
       run: ctest --output-on-failure -C ${{ matrix.build_type }} -j4
 
     # --- Python package ---
@@ -139,8 +143,8 @@ jobs:
     - name: Run pytest
       shell: bash
       run: |
-        if [ -d "PySparQ/tests" ]; then
-          pytest PySparQ/tests/ -v || true
+        if [ -d "PySparQ/test" ]; then
+          pytest PySparQ/test/ -v || true
         else
           echo "No Python tests found"
         fi

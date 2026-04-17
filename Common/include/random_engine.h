@@ -88,7 +88,7 @@ namespace qram_simulator {
 
 		inline seed_t reseed()
 		{
-			_set_seed(seed_t(_rng() * std::numeric_limits<seed_t>::max()));
+			_set_seed(seed_t(_rng() * (std::numeric_limits<seed_t>::max)()));
 			return seed;
 		}
 		inline seed_t _get_seed() { return seed; }
