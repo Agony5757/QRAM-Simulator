@@ -56,16 +56,34 @@ std::string create_temp_source_file(const std::string& code, const std::string& 
  *          需要向上查找直到找到项目根目录
  */
 std::string find_project_root() {
-    // 方法1: 检查环境变量
+    // 方法1: 检查环境变量 (最高优先级)
     const char* env_root = std::getenv("PROJECT_ROOT");
-    if (env_root && std::filesystem::exists(std::string(env_root) + "/SparQ/include")) {
-        return env_root;
+    if (env_root) {
+        std::string root(env_root);
+        if (std::filesystem::exists(root + "/SparQ/include")) {
+            std::cerr << "[find_project_root] Using PROJECT_ROOT: " << root << std::endl;
+            return root;
+        }
     }
 
     // 方法2: 检查 GITHUB_WORKSPACE 环境变量 (CI 环境)
     const char* github_workspace = std::getenv("GITHUB_WORKSPACE");
-    if (github_workspace && std::filesystem::exists(std::string(github_workspace) + "/SparQ/include")) {
-        return github_workspace;
+    if (github_workspace) {
+        std::string root(github_workspace);
+        if (std::filesystem::exists(root + "/SparQ/include")) {
+            std::cerr << "[find_project_root] Using GITHUB_WORKSPACE: " << root << std::endl;
+            return root;
+        }
+    }
+    
+    // 方法2b: 检查 CI 环境中的源码目录 (github.workspace)
+    const char* ci_workspace = std::getenv("CI_WORKSPACE");
+    if (ci_workspace) {
+        std::string root(ci_workspace);
+        if (std::filesystem::exists(root + "/SparQ/include")) {
+            std::cerr << "[find_project_root] Using CI_WORKSPACE: " << root << std::endl;
+            return root;
+        }
     }
 
     // 方法3: 从当前可执行文件路径向上查找
@@ -126,8 +144,17 @@ std::string find_project_root() {
     }
 
     // 默认: 返回当前目录，但记录警告
-    std::cerr << "Warning: Could not find project root, using current directory: " 
-              << std::filesystem::current_path() << std::endl;
+    std::cerr << "[find_project_root] Warning: Could not find project root!" << std::endl;
+    std::cerr << "[find_project_root] Current directory: " << std::filesystem::current_path() << std::endl;
+    std::cerr << "[find_project_root] Checking for SparQ/include: " 
+              << std::filesystem::exists(std::filesystem::current_path() / "SparQ" / "include") << std::endl;
+    
+    // 列出当前目录内容以便调试
+    std::cerr << "[find_project_root] Directory contents:" << std::endl;
+    for (const auto& entry : std::filesystem::directory_iterator(std::filesystem::current_path())) {
+        std::cerr << "  - " << entry.path().filename().string() << std::endl;
+    }
+    
     return ".";
 }
 
