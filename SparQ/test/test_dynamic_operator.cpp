@@ -42,15 +42,44 @@ std::string create_temp_source_file(const std::string& code, const std::string& 
 }
 
 /**
+ * @brief 查找项目根目录
+ */
+std::string find_project_root() {
+    // 方法1: 检查环境变量
+    const char* env_root = std::getenv("PROJECT_ROOT");
+    if (env_root && std::filesystem::exists(std::string(env_root) + "/SparQ/include")) {
+        return env_root;
+    }
+
+    // 方法2: 检查 GITHUB_WORKSPACE 环境变量 (CI 环境)
+    const char* github_workspace = std::getenv("GITHUB_WORKSPACE");
+    if (github_workspace && std::filesystem::exists(std::string(github_workspace) + "/SparQ/include")) {
+        return github_workspace;
+    }
+
+    // 方法3: 从当前目录向上查找
+    std::filesystem::path current = std::filesystem::current_path();
+    for (auto p = current; p.has_parent_path(); p = p.parent_path()) {
+        if (std::filesystem::exists(p / "SparQ" / "include") &&
+            std::filesystem::exists(p / "Common" / "include")) {
+            return p.string();
+        }
+    }
+
+    // 默认: 返回当前目录
+    return ".";
+}
+
+/**
  * @brief 编译 C++ 代码为共享库
  */
 std::string compile_to_shared_lib(const std::string& source_path, const std::string& lib_name) {
     std::string temp_dir = std::filesystem::temp_directory_path().string();
     std::string lib_path = temp_dir + "/" + lib_name;
-    
+
     // 查找项目根目录
-    std::string project_root = ".";  // 简化：假设从项目根目录运行
-    
+    std::string project_root = find_project_root();
+
     // 构建编译命令
     std::string cmd = "g++ -std=c++17 -O2 -fPIC -shared ";
     cmd += "-I" + project_root + "/SparQ/include ";

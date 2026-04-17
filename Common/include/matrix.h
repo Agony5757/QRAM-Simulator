@@ -1,5 +1,11 @@
 #pragma once
 
+// Undefine Windows macros that conflict with standard library functions
+#ifdef _WIN32
+#undef min
+#undef max
+#endif
+
 #include "basic.h"
 #include "Eigen/Eigen"
 #include "Eigen/Dense"
