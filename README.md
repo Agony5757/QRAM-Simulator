@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="banner.png" alt="QRAM-Simulator Banner" width="100%">
+</p>
+
 # QRAM-Simulator & PySparQ
 
 [![arXiv:QRAM](https://img.shields.io/badge/QRAM_Simulator-arXiv%3A2503%2E13832-b31b1b.svg)](https://arxiv.org/abs/2503.13832)
