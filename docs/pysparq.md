@@ -29,7 +29,7 @@ pip install .
 
 ### Requirements
 
-- Python 3.9+
+- Python 3.10+
 - C++17 compatible compiler
 - CMake 3.20+
 - pybind11

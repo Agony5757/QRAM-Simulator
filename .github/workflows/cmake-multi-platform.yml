@@ -65,16 +65,51 @@ jobs:
         ccache --set-config=compression=true
         ccache -z
 
+    - name: Cache ccache
+      if: runner.os == 'Linux'
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ccache
+        key: ccache-${{ runner.os }}-${{ matrix.cpp_compiler }}-${{ matrix.cpp_standard }}-${{ github.sha }}
+        restore-keys: |
+          ccache-${{ runner.os }}-${{ matrix.cpp_compiler }}-${{ matrix.cpp_standard }}-
+
+    # --- sccache (Windows only) ---
+    - name: Install sccache
+      if: runner.os == 'Windows'
+      run: |
+        $sccacheVersion = "0.9.1"
+        $url = "https://github.com/mozilla/sccache/releases/download/v${sccacheVersion}/sccache-v${sccacheVersion}-x86_64-pc-windows-msvc.zip"
+        Invoke-WebRequest -Uri $url -OutFile sccache.zip
+        Expand-Archive -Path sccache.zip -DestinationPath sccache
+        echo "$env:GITHUB_WORKSPACE\sccache\sccache-v${sccacheVersion}-x86_64-pc-windows-msvc" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+    - name: Cache sccache
+      if: runner.os == 'Windows'
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/sccache
+        key: sccache-${{ runner.os }}-msvc-${{ matrix.cpp_standard }}-${{ github.sha }}
+        restore-keys: |
+          sccache-${{ runner.os }}-msvc-${{ matrix.cpp_standard }}-
+
     # --- CMake configure ---
     - name: Configure CMake
       shell: bash
       run: |
+        EXTRA_ARGS=""
+        if [ "$RUNNER_OS" = "Linux" ]; then
+          EXTRA_ARGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
+        elif [ "$RUNNER_OS" = "Windows" ]; then
+          EXTRA_ARGS="-DCMAKE_CXX_COMPILER_LAUNCHER=sccache"
+        fi
         cmake -B "$BUILD_DIR" \
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
           -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
           -DCMAKE_CXX_STANDARD=${{ matrix.cpp_standard }} \
           -DCACHED_REGISTER_SIZE=50 \
+          $EXTRA_ARGS \
           -S .
 
     # --- Build ---
@@ -85,6 +120,10 @@ jobs:
     - name: Show ccache stats
       if: runner.os == 'Linux'
       run: ccache -s
+
+    - name: Show sccache stats
+      if: runner.os == 'Windows'
+      run: sccache --show-stats
 
     # --- Test ---
     - name: Test (Unix)
@@ -108,6 +147,14 @@ jobs:
     - name: Test Python Package
       run: python -c "import pysparq; pysparq.test_import()"
 
+    - name: Validate Stub Synchronization
+      if: runner.os == 'Linux' && matrix.cpp_standard == '17'
+      run: |
+        pip install pybind11-stubgen
+        pybind11-stubgen pysparq._core -o /tmp/stubs
+        diff PySparQ/pysparq/_core.pyi /tmp/stubs/pysparq/_core.pyi || \
+          (echo "::error::Stub files are out of sync. Regenerate with: pybind11-stubgen pysparq._core -o PySparQ/pysparq/" && exit 1)
+
   # ============================================================================
   # Python tests with multiple versions
   # ============================================================================
@@ -117,7 +164,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-24.04, windows-latest]
-        python-version: ['3.9', '3.11', '3.12']
+        python-version: ['3.10', '3.12', '3.13']
 
     steps:
     - uses: actions/checkout@v4
@@ -128,6 +175,7 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+        cache: pip
 
     - name: Install dependencies
       run: |
@@ -179,13 +227,6 @@ jobs:
         cd docs/sphinx
         make html
 
-    - name: Validate Stub Synchronization
-      run: |
-        pip install pybind11-stubgen
-        pybind11-stubgen pysparq._core -o /tmp/stubs --no-setup-py || true
-        diff -q PySparQ/pysparq/_core.pyi /tmp/stubs/pysparq/_core.pyi || \
-          echo "::warning::Stub files may need regeneration. Run: pybind11-stubgen pysparq._core -o PySparQ/pysparq/"
-
     - name: Upload documentation artifact
       uses: actions/upload-artifact@v4
       with:
@@ -212,6 +253,7 @@ jobs:
         cp -r docs/api/html/* pages-deploy/api/
 
         # Other docs
+        cp docs/architecture.md pages-deploy/
         cp docs/operators.md pages-deploy/
         cp docs/README.md pages-deploy/
 
