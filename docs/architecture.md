@@ -445,6 +445,6 @@ Experiments/
 
 ## 6. 参考
 
-- 项目 README: [README.md](README.md)
+- 项目 README: [README.md](../README.md)
 - 复现论文: [arXiv:2503.13832](https://arxiv.org/abs/2503.13832)
-- Keep a Changelog: [CHANGELOG.md](CHANGELOG.md)
+- Keep a Changelog: [CHANGELOG.md](../CHANGELOG.md)

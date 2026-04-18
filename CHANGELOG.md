@@ -10,12 +10,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- 项目架构文档 ARCHITECTURE.md
+- 项目架构文档 ARCHITECTURE.md（已移至 `docs/architecture.md`）
 - 变更日志 CHANGELOG.md
 - 完善的 README.md，包含复现说明
 
 ### Changed
 - 文档结构优化
+- GitHub Actions 现在持久化 ccache（Linux）和 sccache（Windows）缓存
+- GitHub Actions 添加 pip 缓存支持
+- Python CI 矩阵从 [3.9, 3.11, 3.12] 更新为 [3.10, 3.12, 3.13]
+- PyPI wheel 构建从 cp39-313 更新为 cp310-313
+- `pybind11_stubgen` 从运行时依赖移至可选开发依赖
+
+### Removed
+- Python 3.9 支持（最低版本现为 3.10）
+- 根目录 `all_test.sh`（未在 CI 中使用）
+- 根目录 `stubgen.py`（CI 直接使用 `pybind11-stubgen`）
+- 根目录 `IMPLEMENTATION_REPORT.md`（历史文档）
+- 根目录 `README_pypi.md`（未使用；`pyproject.toml` 已指定 `README.md`）
+- 根目录 `ARCHITECTURE.md`（已移至 `docs/architecture.md`）
+- `pyqsparse/` 目录（旧版存根输出）
 
 ### Fixed
 - 无
@@ -160,4 +174,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [Keep a Changelog](https://keepachangelog.com/)
 - [Semantic Versioning](https://semver.org/)
-- 项目文档：[README.md](README.md) | [ARCHITECTURE.md](ARCHITECTURE.md)
+- 项目文档：[README.md](README.md) | [ARCHITECTURE.md](docs/architecture.md)

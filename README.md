@@ -107,7 +107,7 @@ pip install pysparq
 ```
 
 **要求**：
-- Python 3.9 – 3.13
+- Python 3.10 – 3.13
 - NumPy
 
 **可选（推荐）**：
