@@ -212,17 +212,13 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../guide/core_concepts/operators.html">算子</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../guide/development/index.html">量子算法开发指南</a><input aria-label="Toggle navigation of 量子算法开发指南" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../../guide/development/workflow.html">开发工作流</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../guide/development/templates.html">代码模板</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../guide/development/verification.html">测试验证</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../guide/development/standards.html">代码规范</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/development/workflow.html">开发工作流</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/development/templates.html">代码模板</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/development/verification.html">测试验证</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">算子参考</span></p>
 <ul>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../operators/index.html">算子参考</a><input aria-label="Toggle navigation of 算子参考" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../operators/index.html">算子参考</a><input aria-label="Toggle navigation of 算子参考" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../operators/arithmetic.html">算术算子</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../operators/gates.html">基本量子门</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../operators/hadamard.html">Hadamard 操作</a></li>
@@ -247,12 +243,12 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API 参考</span></p>
 <ul>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../api/index.html">API 参考</a><input aria-label="Toggle navigation of API 参考" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../api/index.html">API 参考</a><input aria-label="Toggle navigation of API 参考" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../api/python.html">Python API 参考</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../api/dynamic_operator.html">动态算子 API 参考</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../autoapi/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../autoapi/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
 </ul>
 </li>
 </ul>
@@ -363,6 +359,8 @@
 
 
     <span class="c1"># Python 增强模板 - 包含支持 ctypes 调用的辅助函数</span>
+    <span class="c1"># 关键：通过 state._cpp_ptr()（pysparq._core.SparseState 中暴露）获取 C++ SparseState* 指针，</span>
+    <span class="c1"># ctypes 将其作为 c_void_p 传递，确保指针值正确传递且 ABI 一致。</span>
 <div class="viewcode-block" id="CompilerConfig.PYTHON_TEMPLATE">
 <a class="viewcode-back" href="../../../../autoapi/PySparQ/pysparq/dynamic_operator/compiler/index.html#PySparQ.pysparq.dynamic_operator.compiler.CompilerConfig.PYTHON_TEMPLATE">[文档]</a>
     <span class="n">PYTHON_TEMPLATE</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;#include &quot;basic_components.h&quot;</span>
@@ -386,6 +384,8 @@
 <span class="s2">}}</span>
 
 <span class="s2">// Python 调用辅助函数 - 应用算子到 SparseState</span>
+<span class="s2">// Python 侧通过 state._cpp_ptr() 获取 C++ SparseState* 指针，</span>
+<span class="s2">// ctypes 将其作为 ctypes.c_void_p 传递。</span>
 <span class="s2">extern &quot;C&quot; void apply_operator(BaseOperator* op, SparseState* state) {{</span>
 <span class="s2">    if (op &amp;&amp; state) {{</span>
 <span class="s2">        (*op)(*state);</span>
@@ -394,20 +394,6 @@
 
 <span class="s2">// Python 调用辅助函数 - 应用 dagger</span>
 <span class="s2">extern &quot;C&quot; void apply_operator_dag(BaseOperator* op, SparseState* state) {{</span>
-<span class="s2">    if (op &amp;&amp; state) {{</span>
-<span class="s2">        op-&gt;dag(*state);</span>
-<span class="s2">    }}</span>
-<span class="s2">}}</span>
-
-<span class="s2">// Python 调用辅助函数 - 应用算子到 basis_states 向量</span>
-<span class="s2">extern &quot;C&quot; void apply_operator_vec(BaseOperator* op, std::vector&lt;System&gt;* state) {{</span>
-<span class="s2">    if (op &amp;&amp; state) {{</span>
-<span class="s2">        (*op)(*state);</span>
-<span class="s2">    }}</span>
-<span class="s2">}}</span>
-
-<span class="s2">// Python 调用辅助函数 - 应用 dagger 到 basis_states 向量</span>
-<span class="s2">extern &quot;C&quot; void apply_operator_vec_dag(BaseOperator* op, std::vector&lt;System&gt;* state) {{</span>
 <span class="s2">    if (op &amp;&amp; state) {{</span>
 <span class="s2">        op-&gt;dag(*state);</span>
 <span class="s2">    }}</span>
